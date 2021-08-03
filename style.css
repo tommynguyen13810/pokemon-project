@@ -1,9 +1,30 @@
-h1 {
-  justify-content: center;
+/* .menu {
+  height: 60%;
+  border: solid grey;
+  border-radius: 20px;
+  background-color: white;
+  padding: 5px;
+  width: 60%;
+} */
+
+.pokemonmenu{
+  text-align: center;
+  margin-top: 40%;
 }
 
-button {
-  justify-content:center;
-  background-color: green;
-  padding: 40px;
+input{
+  width: 60%;
+  height: 60%;
+}
+
+body {
+  background-color: #4a624a;
+  background-image: url(images/loadingscreen.gif);
+  background-size: 100%;
+  background-repeat: no-repeat;
+  background-position: top;
+}
+
+.title {
+  color: white;
 }
