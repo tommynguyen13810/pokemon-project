@@ -33,6 +33,8 @@ finalcancel.addEventListener('click', (e) => {
 
 finalsubmit.addEventListener('click', (e) => {
   //go to pokemon battle
+  //store pokemon info in object?
+  //generate random pokemon for computer and store in object
 })
 
 
