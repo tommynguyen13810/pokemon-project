@@ -14,10 +14,6 @@ const p1 = {}
 const computer = {}
 
 
-function getRandomInt(max) {
-  return Math.floor(Math.random() * max);
-}
-
 pokemonForm.addEventListener('submit', async function (e) {
   e.preventDefault();
   try {
@@ -25,7 +21,7 @@ pokemonForm.addEventListener('submit', async function (e) {
     const url = `${pokemonBase}/${input.value}`
     pokemonData = await fetchUrl(url);
     confirmPokemon(pokemonData.sprites.front_default);
-  } catch (e) {
+  }catch(e){
     input.value = ''
     title.textContent = "Invalid Pokemon"
   }
@@ -43,62 +39,57 @@ finalcancel.addEventListener('click', (e) => {
 })
 
 //generates objects for player and computer. proceeds with the pokemon battle
-finalSubmitButton.addEventListener('click', async function (e) {
+finalSubmitButton.addEventListener('click', async function (e){
   //store pokemon info in object?
   //generate random pokemon for computer and store in object
-  createPokemonObject(pokemonData, p1);
-  p1.moves = await parseMoves(pokemonData)
-  console.log(p1)
-  const pokeNum = getRandomInt(898);
+  const user = createPokemonObject(pokemonData, p1);
+  const user.moves = await fetchMoves()
+
+  //1118 pokemon
+  const pokeNum = Math.floor(Math.random() * 1118) + 1;
   console.log(pokeNum)
   const compURL = `${pokemonBase}/${pokeNum}`;
   computerData = await fetchUrl(compURL);
-  createPokemonObject(computerData, computer);
-  computer.moves = await parseMoves(computerData)
-  console.log(computer)
+  let u = createPokemonObject(computerData, computer);
+  u.moves = generateMoves()
   window.location.href = "/battle.html";
 })
 
 //creates pokemon object given pokemon json data and the user(player1 or the computer)
-async function createPokemonObject(pokemon, user) {
+function createPokemonObject(pokemon, user) {
   user.name = pokemon.forms[0].name;
   user.sprite = pokemon.sprites.back_default;
   user.health = pokemon.stats[0].base_stat * 10;
   console.log("HERE 1")
-}
-
-
-//getDamages and returns move 
-async function createMoveObject(moveurl) {
-  try {
-    const moveData = await fetchUrl(moveurl)
-    const moveInfo = {
-      name: moveData.name,
-      damage: moveData.power
-    }
-    return moveInfo;
-  } catch (e) {
-    console.log("Could not fetch moves", e)
-  }
-
+  return user
 }
 
 //generate moves given json data for pokemon
-async function parseMoves({ moves }) {
-  try {
+async function generateMoves(pokemon) {
   //returns 4 random moves from moveset
-  //Generates moves return 4 moves 
-  //4 move urls. 
-  let finalMoves = [];
-  for (let i = 0; i <= 3; i++) {
-    let rand = getRandomInt(moves.length);
-    let chosenMove = await createMoveObject(moves[rand].move.url)
-    finalMoves.push(chosenMove)
+  var moves = []
+  console.log('HERE')
+  try{
+  const numMoves = pokemon.moves.length;
+  console.log(pokemon.moves)
+  for(let i = 0; i < 4; i++) {
+    //
+    const pokeNum = Math.floor(Math.random() * numMoves);
+    const moveData = await fetchUrl(pokemon.moves[pokeNum].move.url)
+    const moveInfo = createMoveObject(moveData);
+    moves.push(moveInfo);
   }
-  return finalMoves;
-  }catch(e) {
-    console.log("Couldn't create moves", e)
+  return moves;
+  }catch(e){
+    console.log("Unable To Fetch Moves", e)
   }
+}
+
+function createMoveObject(moveData) {
+  const moveInfo = {}
+  moveInfo.name = moveData.name;
+  moveInfo.damage = moveData.power;
+  return moveInfo;
 }
 
 //final UI to confirm the pokemon choice
@@ -113,23 +104,23 @@ function confirmPokemon(sprite) {
   finalSubmit.forEach((button) => button.style.display = 'block')
 }
 
-function isError(data) {
-  if (!data) {
+function isError(data){
+  if(!data){
     console.error('missing data')
     return true
   }
   return false
 }
 
-async function fetchUrl(url, requestOptions = null) {
+async function fetchUrl(url, requestOptions = null){
   let res;
-  if (!requestOptions && url) {
+  if(!requestOptions && url){
     const res = await fetch(url)
     const data = await res.json();
     return data;
-
-  } else {
-    res = await fetch(url, requestOptions)
+     
+  }else{
+  res = await fetch(url,requestOptions)
   }
-  return res.json()
+return res.json()
 }
