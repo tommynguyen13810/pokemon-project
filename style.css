@@ -28,3 +28,7 @@ body {
 .title {
   color: white;
 }
+
+.finalsubmit {
+  display: none;
+}
