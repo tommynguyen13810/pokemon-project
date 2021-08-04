@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Pokemon Battle</title>
+    <title>Pokemon <Menu></Menu></title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <link href="style.css" rel="stylesheet"/>
   
@@ -19,7 +19,7 @@
     </div>
     <div class="row justify-content-center">
       <div class="col-6">
-        <form action="/poke" id="choosePokemon" class="menu">
+        <form action="/poke" id="choosePokemon">
           <input type="text" placeholder="Choose a Pokemon" name="pokeName" class="btn py-2">  
           <button class="btn btn-success" id="submit">Submit</button>
         </form>
@@ -33,10 +33,10 @@
     </div>
     <div class="row justify-content-center">
       <div class="col-2">
-        <button class="btn btn-success finalsubmit">Submit</button>
+        <button class="btn btn-success finalsubmit" id="finalsubmit" onclick="window.location.href='/battle.html'">Submit</button>
       </div>
       <div class="col-2">
-        <button class="btn btn-danger finalsubmit">Cancel</button>
+        <button class="btn btn-danger finalsubmit" id="finalcancel">Cancel</button>
       </div>
     </div>
   </div>

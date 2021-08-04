@@ -1,10 +1,12 @@
 const pokemonForm = document.querySelector('#choosePokemon');
-const pokemonBase = "https://pokeapi.co/api/v2/pokemon";
 const confirm = document.querySelector('.confirm')
-const title = document.querySelector('h3')
 const submit = document.querySelector('#submit')
-const input = pokemonForm.elements.pokeName;
 const finalSubmit = document.querySelectorAll('.finalsubmit')
+const title = document.querySelector('h3')
+const finalcancel = document.querySelector('#finalcancel')
+const finalsubmit = document.querySelector('#finalsubmit')
+const pokemonBase = "https://pokeapi.co/api/v2/pokemon";
+const input = pokemonForm.elements.pokeName;
 
 pokemonForm.addEventListener('submit', async function (e) {
   e.preventDefault();
@@ -14,19 +16,37 @@ pokemonForm.addEventListener('submit', async function (e) {
     const pokemon = await fetchUrl(url);
     confirmPokemon(pokemon.sprites.front_default);
   }catch(e){
+    input.value = ''
     title.textContent = "Invalid Pokemon"
   }
 });
 
+finalcancel.addEventListener('click', (e) => {
+  submit.style.display = 'inline-block';
+  input.style.display = 'inline-block';
+  const deletePoke = document.querySelector('.menuPoke')
+  deletePoke.remove()
+  finalSubmit.forEach((button) => button.style.display = 'none')
+  input.value = '';
+  title.textContent = "Choose Your Pokemon"
+})
+
+finalsubmit.addEventListener('click', (e) => {
+  //go to pokemon battle
+})
+
+
+
+
 function confirmPokemon(sprite) {
   const img = document.createElement('img')
   img.src = sprite;
+  img.classList.add("menuPoke")
   confirm.append(img)
   submit.style.display = 'none';
   input.style.display = 'none';
   title.textContent = "Choose This Pokemon?";
-  finalSubmit[0].style.display = 'block';
-  finalSubmit[1].style.display = 'block';
+  finalSubmit.forEach((button) => button.style.display = 'block')
 }
 
 function isError(data){
