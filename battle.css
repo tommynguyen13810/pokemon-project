@@ -1,0 +1,12 @@
+body {
+  background-color: grey;
+  background-image: url(images/pokemonbattle.png);
+  background-size: 100%;
+  background-repeat: no-repeat;
+  background-position: top;
+}
+
+#pokeSprite{
+  width: 60%;
+  height: auto;
+}

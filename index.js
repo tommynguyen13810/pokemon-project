@@ -1,3 +1,6 @@
+import { Pokemon } from './classes.js'
+import { Button, Battle } from './button.js'
+
 const pokemonForm = document.querySelector('#choosePokemon');
 const confirm = document.querySelector('.confirm')
 const submit = document.querySelector('#submit')
@@ -9,10 +12,12 @@ const pokemonBase = "https://pokeapi.co/api/v2/pokemon";
 const input = pokemonForm.elements.pokeName;
 var pokemonData;
 var computerData;
+var p1MoveMade = false;
 
-const p1 = {}
-const computer = {}
+var p1;
+var computer;
 
+const buttonArray = [];
 
 function getRandomInt(max) {
   return Math.floor(Math.random() * max);
@@ -20,6 +25,7 @@ function getRandomInt(max) {
 
 pokemonForm.addEventListener('submit', async function (e) {
   e.preventDefault();
+
   try {
     input.value = input.value.toLowerCase()
     const url = `${pokemonBase}/${input.value}`
@@ -43,62 +49,45 @@ finalcancel.addEventListener('click', (e) => {
 })
 
 //generates objects for player and computer. proceeds with the pokemon battle
-finalSubmitButton.addEventListener('click', async function (e) {
-  //store pokemon info in object?
-  //generate random pokemon for computer and store in object
-  createPokemonObject(pokemonData, p1);
-  p1.moves = await parseMoves(pokemonData)
-  console.log(p1)
-  const pokeNum = getRandomInt(898);
-  console.log(pokeNum)
-  const compURL = `${pokemonBase}/${pokeNum}`;
-  computerData = await fetchUrl(compURL);
-  createPokemonObject(computerData, computer);
-  computer.moves = await parseMoves(computerData)
-  console.log(computer)
-  window.location.href = "/battle.html";
+finalSubmitButton.addEventListener('click', async e => {
+  let pokemon = input.value
+  if (pokemon) {
+    p1 = new Pokemon(pokemon);
+    await p1.updateInfo()
+
+    const pokeNum = Math.floor(Math.random() * 800) + 1;
+    computer = new Pokemon(pokeNum);
+    await computer.updateInfo()
+
+    loadBattle()
+  
+    createMoveButtons()
+    await waitForGameOver()
+    console.log('gameover')
+
+  }
 })
 
-//creates pokemon object given pokemon json data and the user(player1 or the computer)
-async function createPokemonObject(pokemon, user) {
-  user.name = pokemon.forms[0].name;
-  user.sprite = pokemon.sprites.back_default;
-  user.health = pokemon.stats[0].base_stat * 10;
-  console.log("HERE 1")
+function loadBattle() {
+  document.body.innerHTML = '';
+  document.body.innerHTML = Battle(100,100);
 }
 
+function createMoveButtons(){
+  for(let i = 0; i <= 3; i++) {
+    buttonArray[i] = document.createElement('button')
+    buttonArray[i].classList.add('btn')
+    buttonArray[i].classList.add('btn-secondary')
+    buttonArray[i].textContent = p1.getMoves()[i].move;
+    document.body.append(buttonArray[i])
 
-//getDamages and returns move 
-async function createMoveObject(moveurl) {
-  try {
-    const moveData = await fetchUrl(moveurl)
-    const moveInfo = {
-      name: moveData.name,
-      damage: moveData.power
-    }
-    return moveInfo;
-  } catch (e) {
-    console.log("Could not fetch moves", e)
+    buttonArray[i].addEventListener('click', function () {
+      computer.updateHealth(p1.getDamage(i))
+      console.log("Computer Health",computer.getHealth())
+      p1MoveMade = true; //do this after all the data is changed
+    })
   }
 
-}
-
-//generate moves given json data for pokemon
-async function parseMoves({ moves }) {
-  try {
-  //returns 4 random moves from moveset
-  //Generates moves return 4 moves 
-  //4 move urls. 
-  let finalMoves = [];
-  for (let i = 0; i <= 3; i++) {
-    let rand = getRandomInt(moves.length);
-    let chosenMove = await createMoveObject(moves[rand].move.url)
-    finalMoves.push(chosenMove)
-  }
-  return finalMoves;
-  }catch(e) {
-    console.log("Couldn't create moves", e)
-  }
 }
 
 //final UI to confirm the pokemon choice
@@ -113,13 +102,6 @@ function confirmPokemon(sprite) {
   finalSubmit.forEach((button) => button.style.display = 'block')
 }
 
-function isError(data) {
-  if (!data) {
-    console.error('missing data')
-    return true
-  }
-  return false
-}
 
 async function fetchUrl(url, requestOptions = null) {
   let res;
@@ -133,3 +115,89 @@ async function fetchUrl(url, requestOptions = null) {
   }
   return res.json()
 }
+
+
+//waits for P1 to make a response
+function waitForP1() {
+  return new Promise(function (resolve, reject) {
+    (function waitForChoice() {
+      if (p1MoveMade) {
+        console.log("player made move")
+        p1MoveMade = false; //reset for next turn
+        return resolve("P1 move choice, or P1 data or something");
+      }
+      setTimeout(waitForChoice, 30);
+    })();
+  });
+}
+
+
+
+//Simulate 
+function waitForGameOver() {
+  try{
+    console.log('in here')
+    return new Promise(function (resolve, reject) {
+      (async function waitForGame() {
+        console.log("waiting for player")
+        await waitForP1();
+        // update computer health with damage
+        if(computer.getHealth() <= 0) return resolve();
+        let move = getRandomInt(4)
+        p1.updateHealth(computer.getDamage(move))
+        console.log("Player Health:",p1.getHealth())
+        if(p1.getHealth() <= 0) return resolve();
+        setTimeout(waitForGame, 30);
+      })();
+    });
+  }catch(e){
+    console.log(e)
+  }
+}
+
+
+
+
+//BATTLE FLOW
+//waitForGameOver() function is called to start the game
+//ALL OF THIS IS IN waitForTrue down below
+//TRUE 
+//TURN FLOW
+//then P1 turn starts 
+//Player one chooses one of 4 attacks. 
+//Pokemon.attack -> Opposite Player 
+//Damage from Opposite Player
+//Life bar decreases per attack 
+//Boolean Flag to indicate whos turn it is :)
+//TRUE you false/pc 
+//Trigger function onclick
+//After Attack is finished trigger bool for PC turn. 
+//PC randomly chooses 1-4 attacks and repeat until Game over ? 
+//State of application
+//Data
+
+
+//FLOW TWO
+//players turn
+//render buttons -> render id="moveName"
+//player clicks button, onlick saves the player choice/move, damage = p1.getDamage(), computer.updateHealth(damage)
+//Switch TURN 
+// then comp chooses 0-3 attacks
+// attacks -> flag
+//attacks changes the state.
+
+
+
+//call another waitForPlayer function to wait to see what player chooses
+  //player clicks a button, label buttons 0-3?, corresponds with moves?
+  //get move and attacks computer with that move, computer.updateHealth(damage)
+  //checks if health is below zero or not
+
+//calls a computerTurn function that chooses random move and executes its attacks 
+  //calc random num 0-3, let damage = computer.getMoves[rand].damage
+  //p1.updateHealth(damage), and checks if health is below zero or not
+
+
+//repeats until someones health is below zero, gameOver = true; return gameOver;
+//waitForTrue function is resolved.
+//can output winner and loser screen? or just end there 
