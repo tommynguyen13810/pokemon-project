@@ -7,6 +7,7 @@ export class Pokemon {
     this.power
     this.sprite
     this.health
+    this.startHealth
   }
 
   async updateInfo() {
@@ -17,6 +18,7 @@ export class Pokemon {
       this.pokemon = this.pokeInfo.forms[0].name
       this.sprite = this.pokeInfo.sprites.back_default
       this.health = this.pokeInfo.stats[0].base_stat * 10
+      this.startHealth = this.pokeInfo.stats[0].base_stat * 10
       if (d.ok) {
         for(let i = 0; i <= 3; i++) {
           let rand = this.getRandomInt(this.pokeInfo.moves.length);
@@ -55,17 +57,21 @@ export class Pokemon {
     return this.health
   }
 
+  getStartHealth() {
+    return this.startHealth
+  }
+
   getSprite() {
     return this.sprite
   }
 
   updateHealth(damage) {
     this.health = this.health - damage;
+    if(this.health < 0) {
+      this.health = 0;
+    }
   }
 
-  chooseMove() {
-    
-  }
 
   //random move for when computer attacks
 

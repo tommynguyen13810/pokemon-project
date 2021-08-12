@@ -13,11 +13,12 @@ const input = pokemonForm.elements.pokeName;
 var pokemonData;
 var computerData;
 var p1MoveMade = false;
+var msg;
 
 var p1;
 var computer;
-
 const buttonArray = [];
+
 
 function getRandomInt(max) {
   return Math.floor(Math.random() * max);
@@ -60,34 +61,52 @@ finalSubmitButton.addEventListener('click', async e => {
     await computer.updateInfo()
 
     loadBattle()
-  
-    createMoveButtons()
-    await waitForGameOver()
-    console.log('gameover')
 
+    createMoveButtons()
+    const result = await waitForGameOver()
+    msg.textContent = `GAMEOVER! ${result}`
   }
 })
 
 function loadBattle() {
   document.body.innerHTML = '';
-  document.body.innerHTML = Battle(100,100);
+  document.body.style.background = "grey url(images/pokemonbattle.png) no-repeat top"
+  document.body.style.backgroundSize = "cover";
+  document.body.innerHTML = Battle(p1.getHealth(), computer.getHealth(), p1.sprite, computer.pokeInfo.sprites.front_default, p1.pokemon, computer.pokemon)
+  msg = document.querySelector('#msg')
 }
 
-function createMoveButtons(){
-  for(let i = 0; i <= 3; i++) {
-    buttonArray[i] = document.createElement('button')
-    buttonArray[i].classList.add('btn')
-    buttonArray[i].classList.add('btn-secondary')
-    buttonArray[i].textContent = p1.getMoves()[i].move;
-    document.body.append(buttonArray[i])
+function createMoveButtons() {
+  for (let i = 0; i <= 3; i++) {
+    let button = document.querySelector(`#button${i}`)
+    buttonArray[i] = button;
+    button.textContent = p1.getMoves()[i].move;
 
-    buttonArray[i].addEventListener('click', function () {
-      computer.updateHealth(p1.getDamage(i))
-      console.log("Computer Health",computer.getHealth())
-      p1MoveMade = true; //do this after all the data is changed
+    button.addEventListener('click', function () {
+      playerAttack(i)
     })
   }
+}
 
+
+function playerAttack(moveNum) {
+  computer.updateHealth(p1.getDamage(moveNum))
+  msg.textContent = `${p1.pokemon} used ${p1.getMoves()[moveNum].move}!`
+  let computerHealth = document.querySelector(`#computerHealth`)
+  computerHealth.textContent = computer.getHealth()
+  computerHealth.style.width = `${computer.getHealth() / computer.getStartHealth()*100}%`;
+  p1MoveMade = true; //do this after all the data is changed
+  console.log("Computer Health:", computer.getHealth())
+}
+
+function computerAttack() {
+  let moveNum = getRandomInt(4)
+  msg.textContent = `${computer.pokemon} used ${computer.getMoves()[moveNum].move}!`
+  p1.updateHealth(computer.getDamage(moveNum))
+  let p1Health = document.querySelector(`#p1Health`)
+  p1Health.textContent = p1.getHealth()
+  p1Health.style.width = `${p1.getHealth() / p1.getStartHealth()*100}%`;
+  console.log("Player Health:", p1.getHealth())
 }
 
 //final UI to confirm the pokemon choice
@@ -102,6 +121,65 @@ function confirmPokemon(sprite) {
   finalSubmit.forEach((button) => button.style.display = 'block')
 }
 
+function disableButtons() {
+  for(let i = 0; i<=3; i++) {
+    buttonArray[i].setAttribute('disabled', '')
+  }
+}
+
+function enableButtons() {
+  for(let i = 0; i<=3; i++) {
+    buttonArray[i].removeAttribute('disabled')
+  }
+}
+
+
+//waits for P1 to make a response
+function waitForP1() {
+  return new Promise(function (resolve, reject) {
+    (function waitForChoice() {
+      if (p1MoveMade) {
+        p1MoveMade = false; //reset for next turn
+        return resolve("P1 move choice, or P1 data or something");
+      }
+      setTimeout(waitForChoice, 30);
+    })();
+  });
+}
+
+
+
+//Simulate 
+function waitForGameOver() {
+  try {
+    return new Promise(function (resolve, reject) {
+      (async function waitForGame() {
+        msg.textContent = "Waiting For Player Move"
+        await waitForP1();
+        disableButtons()
+        // update computer health with damage
+        if (computer.getHealth() <= 0) return resolve("PLAYER WINS");
+        await delay(1500)
+        computerAttack();
+        if (p1.getHealth() <= 0) return resolve("COMPUTER WINS");
+        await delay(1500)
+        enableButtons()
+        setTimeout(waitForGame, 30);
+      })();
+    });
+  } catch (e) {
+    console.log(e)
+  }
+}
+
+function delay(time) {
+  return new Promise((resolve, reject) => {
+    if(isNaN(time)) {
+      reject(new Error('delay requires a valid number.'))
+    }
+    setTimeout(resolve, time);
+  });
+}
 
 async function fetchUrl(url, requestOptions = null) {
   let res;
@@ -115,46 +193,6 @@ async function fetchUrl(url, requestOptions = null) {
   }
   return res.json()
 }
-
-
-//waits for P1 to make a response
-function waitForP1() {
-  return new Promise(function (resolve, reject) {
-    (function waitForChoice() {
-      if (p1MoveMade) {
-        console.log("player made move")
-        p1MoveMade = false; //reset for next turn
-        return resolve("P1 move choice, or P1 data or something");
-      }
-      setTimeout(waitForChoice, 30);
-    })();
-  });
-}
-
-
-
-//Simulate 
-function waitForGameOver() {
-  try{
-    console.log('in here')
-    return new Promise(function (resolve, reject) {
-      (async function waitForGame() {
-        console.log("waiting for player")
-        await waitForP1();
-        // update computer health with damage
-        if(computer.getHealth() <= 0) return resolve();
-        let move = getRandomInt(4)
-        p1.updateHealth(computer.getDamage(move))
-        console.log("Player Health:",p1.getHealth())
-        if(p1.getHealth() <= 0) return resolve();
-        setTimeout(waitForGame, 30);
-      })();
-    });
-  }catch(e){
-    console.log(e)
-  }
-}
-
 
 
 
