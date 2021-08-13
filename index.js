@@ -1,7 +1,8 @@
 import { Pokemon } from './classes.js'
 import { Button, Battle } from './button.js'
 
-const pokemonForm = document.querySelector('#choosePokemon');
+
+const poketest = document.querySelector('#pokeName')
 const confirm = document.querySelector('.confirm')
 const submit = document.querySelector('#submit')
 const finalSubmit = document.querySelectorAll('.finalsubmit')
@@ -9,34 +10,55 @@ const title = document.querySelector('h3')
 const finalcancel = document.querySelector('#finalcancel')
 const finalSubmitButton = document.querySelector('#finalsubmit')
 const pokemonBase = "https://pokeapi.co/api/v2/pokemon";
-const input = pokemonForm.elements.pokeName;
+var bool = false
 var pokemonData;
 var computerData;
 var p1MoveMade = false;
 var msg;
-
 var p1;
 var computer;
 const buttonArray = [];
+var input = document.querySelector('#pokeName');
+input.addEventListener('input', submitPokemon)
+
 
 
 function getRandomInt(max) {
   return Math.floor(Math.random() * max);
 }
 
-pokemonForm.addEventListener('submit', async function (e) {
-  e.preventDefault();
 
-  try {
-    input.value = input.value.toLowerCase()
-    const url = `${pokemonBase}/${input.value}`
-    pokemonData = await fetchUrl(url);
-    confirmPokemon(pokemonData.sprites.front_default);
-  } catch (e) {
-    input.value = ''
+async function submitPokemon(e) {
+  if (input.value.length > 1) {
+    $(document).keydown(function (event) {
+      //proper indentiation of keycode and which to be equal to 13.
+      if ((event.keyCode || event.which) === 13 && !bool){
+        bool = true
+        $("#submit").trigger('click');
+      }
+    });
+
+  }
+  else {
     title.textContent = "Invalid Pokemon"
   }
+}
+
+
+
+
+$('#submit').on('click', async function (e) {
+  try{
+  input.value = input.value.toLowerCase()
+  const url = `${pokemonBase}/${input.value}`
+  pokemonData = await fetchUrl(url);
+  confirmPokemon(pokemonData.sprites.front_default);
+}catch(e){
+  input.value = ""
+  title.textContent = "Invalid Pokemon"
+}
 });
+
 
 //cnacels pokemon choice and returns back to beginning UI
 finalcancel.addEventListener('click', (e) => {
@@ -49,24 +71,23 @@ finalcancel.addEventListener('click', (e) => {
   title.textContent = "Choose Your Pokemon"
 })
 
+
 //generates objects for player and computer. proceeds with the pokemon battle
-finalSubmitButton.addEventListener('click', async e => {
-  let pokemon = input.value
-  if (pokemon) {
-    p1 = new Pokemon(pokemon);
-    await p1.updateInfo()
+finalSubmitButton.addEventListener('click', renderInput)
+finalSubmitButton.addEventListener('touchend', renderInput)
 
-    const pokeNum = Math.floor(Math.random() * 800) + 1;
-    computer = new Pokemon(pokeNum);
-    await computer.updateInfo()
+//final UI to confirm the pokemon choice
+function confirmPokemon(sprite) {
+  const img = document.createElement('img')
+  img.src = sprite;
+  img.classList.add("menuPoke")
+  confirm.append(img)
+  submit.style.display = 'none';
+  input.style.display = 'none';
+  title.textContent = "Choose This Pokemon?";
+  finalSubmit.forEach((button) => button.style.display = 'block')
+}
 
-    loadBattle()
-
-    createMoveButtons()
-    const result = await waitForGameOver()
-    msg.textContent = `GAMEOVER! ${result}`
-  }
-})
 
 function loadBattle() {
   document.body.innerHTML = '';
@@ -88,13 +109,33 @@ function createMoveButtons() {
   }
 }
 
+async function renderInput() {
+  let pokemon = input.value
+  if (pokemon) {
+    p1 = new Pokemon(pokemon);
+    console.log(p1)
+    await p1.updateInfo()
+
+    const pokeNum = Math.floor(Math.random() * 800) + 1;
+    computer = new Pokemon(pokeNum);
+    await computer.updateInfo()
+
+    loadBattle()
+
+    createMoveButtons()
+    const result = await waitForGameOver()
+    msg.textContent = `GAMEOVER! ${result}`
+  }
+}
+
+
 
 function playerAttack(moveNum) {
   computer.updateHealth(p1.getDamage(moveNum))
   msg.textContent = `${p1.pokemon} used ${p1.getMoves()[moveNum].move}!`
   let computerHealth = document.querySelector(`#computerHealth`)
   computerHealth.textContent = computer.getHealth()
-  computerHealth.style.width = `${computer.getHealth() / computer.getStartHealth()*100}%`;
+  computerHealth.style.width = `${computer.getHealth() / computer.getStartHealth() * 100}%`;
   p1MoveMade = true; //do this after all the data is changed
   console.log("Computer Health:", computer.getHealth())
 }
@@ -105,30 +146,19 @@ function computerAttack() {
   p1.updateHealth(computer.getDamage(moveNum))
   let p1Health = document.querySelector(`#p1Health`)
   p1Health.textContent = p1.getHealth()
-  p1Health.style.width = `${p1.getHealth() / p1.getStartHealth()*100}%`;
+  p1Health.style.width = `${p1.getHealth() / p1.getStartHealth() * 100}%`;
   console.log("Player Health:", p1.getHealth())
 }
 
-//final UI to confirm the pokemon choice
-function confirmPokemon(sprite) {
-  const img = document.createElement('img')
-  img.src = sprite;
-  img.classList.add("menuPoke")
-  confirm.append(img)
-  submit.style.display = 'none';
-  input.style.display = 'none';
-  title.textContent = "Choose This Pokemon?";
-  finalSubmit.forEach((button) => button.style.display = 'block')
-}
 
 function disableButtons() {
-  for(let i = 0; i<=3; i++) {
+  for (let i = 0; i <= 3; i++) {
     buttonArray[i].setAttribute('disabled', '')
   }
 }
 
 function enableButtons() {
-  for(let i = 0; i<=3; i++) {
+  for (let i = 0; i <= 3; i++) {
     buttonArray[i].removeAttribute('disabled')
   }
 }
@@ -149,7 +179,7 @@ function waitForP1() {
 
 
 
-//Simulate 
+//B+
 function waitForGameOver() {
   try {
     return new Promise(function (resolve, reject) {
@@ -174,11 +204,11 @@ function waitForGameOver() {
 
 function delay(time) {
   return new Promise((resolve, reject) => {
-    if(isNaN(time)) {
+    if (isNaN(time)) {
       reject(new Error('delay requires a valid number.'))
     }
     setTimeout(resolve, time);
-  });
+  }).catch(e => console.error(e))
 }
 
 async function fetchUrl(url, requestOptions = null) {

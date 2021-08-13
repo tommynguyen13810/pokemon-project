@@ -54,27 +54,4 @@ export function Battle(playerHealth, computerHealth, p1sprite, computersprite, p
     <p id="msg" style="text-align:center;">Waiting For Player Move</p>
   </section>`
 }
-// export function Battle(playerHealth, computerHealth, p1sprite, computersprite) {
-//   return `<section class="container-fluid computerDisplay">
-// 		<div class="row align-items-center">
-// 			<div class="col-6 justify-content-center">
-// 					<progress id="computerHealth" max="${computerHealth}" value="${computerHealth}"></progress>
-// 			</div>
-// 			<div class="col-6">
-// 				<img src="${computersprite}" alt="" id="pokeSprite">
-//       </div>
-// 		</div>
-// 	</section>
 
-//   <section class="container-fluid playerDisplay">
-// 		<div class="row align-items-center">
-// 			<div class="col-6">
-// 				<img src="${p1sprite}" alt="" id="pokeSprite">
-//       </div>
-// 			<div class="col-6 justify-content-center">
-// 					<progress id="playerHealth" max="${playerHealth}" value="${playerHealth}"> </progress>
-// 			</div>
-// 		</div>
-// 	</section>
-// 	<div class="movemenu"></section>`
-// }
